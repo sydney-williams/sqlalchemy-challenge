@@ -100,14 +100,20 @@ def temperature():
 @app.route("/api/v1.0/temp/<start>")
 @app.route("/api/v1.0/temp/<start>/<end>")
 def details(start=None, end=None):
-    data = session.query(func.min(measurements.tobs),func.max(measurements.tobs),func.avg(measurements.tobs)).filter(measurements.date == start)
+    if not end:
+        data = session.query(func.min(measurements.tobs),func.max(measurements.tobs),func.avg(measurements.tobs)).\
+        filter(measurements.date >= start).all()
+        start_date = list(np.ravel(data))
     #start_date = session.query(measurements.date).order_by(measurements.date.desc()).first()
     #end_date = dt.datetime.strptime(dates[0], '%Y-%m-%d')
     #dates = dates.date()
     #year_ago = dates - relativedelta(days=365)
 
-    return jsonify (start_date = list(data))
+        return jsonify (start_date)
     
-    data = session.query(func.min(measurements.tobs),func.max(measurements.tobs),func.avg(measurements.tobs)).filter(measurements.date == end)
-    return jsonify (end_date = list(data))
+    start_end = session.query(func.min(measurements.tobs),func.max(measurements.tobs),func.avg(measurements.tobs)).filter(measurements.date >= start).\
+        filter(measurements.date >= end).all()
+    return jsonify (start_end)
 
+if __name__ == "__main__":
+        app.run(host='127.0.01', port=5000, debug=True)
